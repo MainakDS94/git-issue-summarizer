@@ -50,7 +50,8 @@ el("copyPromptBtn").onclick = async () => {
 };
 
 el("openChatgptBtn").onclick = () => {
-  window.open("https://chatgpt.com/", "_blank");
+  window.open("https://chatgpt.com/?temporary-chat=true", "_blank");
 };
 
 init();
+
