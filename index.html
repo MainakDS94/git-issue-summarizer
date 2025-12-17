@@ -1,75 +1,156 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>GitLab Issue → ChatGPT</title>
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="css/app.css" />
+  <title>Issue → ChatGPT Prompt Builder</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="app.js?v=20251217-2"></script>
 </head>
-
 <body>
-  <header class="app-header">
-    <h1>GitLab Issue → ChatGPT</h1>
-    <p>Prepare a structured prompt and download all related images</p>
-  </header>
-
-  <main class="container">
-
-    <!-- SETUP -->
-    <section id="vault-setup" class="card hidden">
-      <h2>Secure Setup</h2>
-
-      <label>GitLab Host</label>
-      <input id="hostInput" placeholder="https://issues.markify.com" />
-
-      <label>GitLab Personal Access Token</label>
-      <input id="patInput" type="password" placeholder="glpat-..." />
-
-      <label>Passphrase</label>
-      <input id="passphraseInput" type="password" />
-
-      <button id="saveVaultBtn">Encrypt & Save</button>
-    </section>
-
-    <!-- UNLOCK -->
-    <section id="vault-unlock" class="card hidden">
-      <h2>Unlock</h2>
-
-      <label>Passphrase</label>
-      <input id="unlockPassphraseInput" type="password" />
-
-      <button id="unlockVaultBtn">Unlock</button>
-      <button class="link danger" id="resetVaultBtn">Reset vault</button>
-    </section>
-
-    <!-- APP -->
-    <section id="app" class="card hidden">
-      <h2>Build ChatGPT Prompt</h2>
-
-      <label>GitLab Issue URL</label>
-      <input id="issueUrlInput" placeholder="https://issues.markify.com/.../-/issues/1234" />
-
-      <button id="buildPromptBtn">Build Prompt & Download Images</button>
-
-      <label>Generated Prompt</label>
-      <textarea id="promptOutput" rows="18"></textarea>
-
-      <div class="actions">
-        <button id="copyPromptBtn">Copy Prompt</button>
-        <button id="openChatgptBtn" class="secondary">Open ChatGPT</button>
+  <div class="wrap">
+    <header class="header">
+      <div class="title">
+        <h1>Issue → ChatGPT Prompt Builder</h1>
+        <p class="subtitle">
+          Paste a GitLab Issue/Work Item URL. The app fetches description + comments, extracts images, downloads them,
+          and generates a polished ChatGPT prompt for copy/paste. Pairing is local to this browser profile on this PC.
+        </p>
       </div>
+      <div class="headerActions">
+        <button class="btn secondary" id="lockBtn" type="button">Lock</button>
+        <button class="btn danger" id="resetPairBtn" type="button">Reset pairing</button>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="toolbar">
+        <div class="field">
+          <label for="issueUrl">GitLab URL</label>
+          <input
+            id="issueUrl"
+            type="text"
+            placeholder="https://issues.markify.com/root/products/-/(issues|work_items)/1566"
+            autocomplete="off"
+            inputmode="url"
+          />
+        </div>
+
+        <button class="btn" id="buildBtn" type="button">Build prompt + Download images</button>
+
+        <div class="toggles">
+          <div class="toggle" title="If enabled, system notes are included in the prompt.">
+            <input id="includeSystemNotes" type="checkbox" />
+            <span>Include system notes</span>
+          </div>
+          <button class="btn secondary" id="copyBtn" type="button">Copy prompt</button>
+          <button class="btn secondary" id="openChatgptBtn" type="button">Open ChatGPT</button>
+        </div>
+      </div>
+
+      <div class="statusbar">
+        <div class="right">
+          <div class="pill" id="pairPill">Unpaired</div>
+          <div class="pill" id="itemPill">No item</div>
+          <div class="pill" id="imgPill">0 images</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panelRow">
+          <div class="field">
+            <label>Prompt</label>
+            <textarea id="promptOut" rows="16" placeholder="Prompt will appear here…"></textarea>
+          </div>
+        </div>
+
+        <div class="panelRow">
+          <div class="field">
+            <label>Images (downloaded best-effort)</label>
+            <div class="imageBar">
+              <button class="btn secondary" id="downloadImagesBtn" type="button" disabled>Download images</button>
+              <button class="btn secondary" id="copyImageLinksBtn" type="button" disabled>Copy image links</button>
+            </div>
+            <div class="note" id="imgNote"></div>
+          </div>
+        </div>
+
+        <div class="panelRow">
+          <div class="note" id="statusNote"></div>
+        </div>
+      </div>
+
+      <footer class="footer">
+        <div class="hint">
+          Tip: If you hit CORS errors, host this page under the same GitLab origin (recommended) or enable CORS on the GitLab reverse proxy.
+        </div>
+      </footer>
     </section>
+  </div>
 
-  </main>
+  <!-- AUTH MODAL (same UX pattern as your backlog tool) -->
+  <div class="modalBackdrop" id="authBackdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+      <div class="modalHeader">
+        <div>
+          <h2 id="authTitle">Local pairing required</h2>
+          <p class="modalSub" id="authSub">
+            Pair this browser on this PC with a GitLab token. Stored encrypted locally.
+          </p>
+        </div>
+        <button class="iconbtn" id="closeAuthBtn" type="button" title="Close">×</button>
+      </div>
 
-  <footer>
-    <small>Local only · No backend · No API cost</small>
-  </footer>
+      <div class="modalBody">
+        <div class="tabs">
+          <button class="tab active" id="tabUnlock" type="button">Unlock</button>
+          <button class="tab" id="tabPair" type="button">Pair new token</button>
+        </div>
 
-  <script src="js/vault.js"></script>
-  <script src="js/gitlab.js"></script>
-  <script src="js/images.js"></script>
-  <script src="js/prompt.js"></script>
-  <script src="js/app.js"></script>
+        <!-- Unlock -->
+        <div class="pane" id="paneUnlock">
+          <div class="field">
+            <label for="unlockDeviceLabel">Device label</label>
+            <input id="unlockDeviceLabel" type="text" placeholder="(auto-filled if paired)" disabled />
+          </div>
+
+          <div class="field">
+            <label for="unlockPass">Pairing passphrase</label>
+            <input id="unlockPass" type="password" placeholder="Your local pairing passphrase" autocomplete="current-password" />
+          </div>
+
+          <div class="modalActions">
+            <button class="btn" id="unlockBtn" type="button">Unlock</button>
+          </div>
+
+          <div class="note" id="unlockNote"></div>
+        </div>
+
+        <!-- Pair -->
+        <div class="pane hidden" id="panePair">
+          <div class="field">
+            <label for="pairDeviceLabel">Device label (PC-specific identifier)</label>
+            <input id="pairDeviceLabel" type="text" placeholder="e.g., MAINAK-WORK-PC" autocomplete="off" />
+          </div>
+
+          <div class="field">
+            <label for="pairToken">GitLab PAT</label>
+            <input id="pairToken" type="password" placeholder="Paste token from Bitwarden" autocomplete="off" />
+          </div>
+
+          <div class="field">
+            <label for="pairPass">Pairing passphrase</label>
+            <input id="pairPass" type="password" placeholder="Choose a strong passphrase; store in Bitwarden" autocomplete="new-password" />
+          </div>
+
+          <div class="modalActions">
+            <button class="btn" id="pairBtn" type="button">Create token–PC pair</button>
+          </div>
+
+          <div class="note" id="pairNote"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
