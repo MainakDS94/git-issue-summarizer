@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GitLab Issue → ChatGPT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+
+<body>
+  <header class="app-header">
+    <h1>GitLab Issue → ChatGPT</h1>
+    <p>Prepare a structured prompt and download all related images</p>
+  </header>
+
+  <main class="container">
+
+    <!-- SETUP -->
+    <section id="vault-setup" class="card hidden">
+      <h2>Secure Setup</h2>
+
+      <label>GitLab Host</label>
+      <input id="hostInput" placeholder="https://issues.markify.com" />
+
+      <label>GitLab Personal Access Token</label>
+      <input id="patInput" type="password" placeholder="glpat-..." />
+
+      <label>Passphrase</label>
+      <input id="passphraseInput" type="password" />
+
+      <button id="saveVaultBtn">Encrypt & Save</button>
+    </section>
+
+    <!-- UNLOCK -->
+    <section id="vault-unlock" class="card hidden">
+      <h2>Unlock</h2>
+
+      <label>Passphrase</label>
+      <input id="unlockPassphraseInput" type="password" />
+
+      <button id="unlockVaultBtn">Unlock</button>
+      <button class="link danger" id="resetVaultBtn">Reset vault</button>
+    </section>
+
+    <!-- APP -->
+    <section id="app" class="card hidden">
+      <h2>Build ChatGPT Prompt</h2>
+
+      <label>GitLab Issue URL</label>
+      <input id="issueUrlInput" placeholder="https://issues.markify.com/.../-/issues/1234" />
+
+      <button id="buildPromptBtn">Build Prompt & Download Images</button>
+
+      <label>Generated Prompt</label>
+      <textarea id="promptOutput" rows="18"></textarea>
+
+      <div class="actions">
+        <button id="copyPromptBtn">Copy Prompt</button>
+        <button id="openChatgptBtn" class="secondary">Open ChatGPT</button>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <small>Local only · No backend · No API cost</small>
+  </footer>
+
+  <script src="js/vault.js"></script>
+  <script src="js/gitlab.js"></script>
+  <script src="js/images.js"></script>
+  <script src="js/prompt.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
